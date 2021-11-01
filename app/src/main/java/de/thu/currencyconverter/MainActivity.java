@@ -1,8 +1,14 @@
 package de.thu.currencyconverter;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
+import androidx.appcompat.widget.ShareActionProvider;
+import androidx.core.view.MenuItemCompat;
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
@@ -35,6 +41,44 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         // Set Text Views
         setMyTextViews (spinnerFromValue, spinnerToValue);
 
+    }
+
+    ShareActionProvider shareActionProvider;
+
+    // Set menu resource for toolbar and add share button
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.my_menu, menu);
+        MenuItem shareItem = menu.findItem(R.id.action_share);
+        shareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(shareItem);
+        setShareText(null);
+        return true;
+    }
+
+    private void setShareText(String text) {
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType("text/plain");
+        if (text != null) {
+            shareIntent.putExtra(Intent.EXTRA_TEXT, text);
+        }
+        shareActionProvider.setShareIntent(shareIntent);
+    }
+
+    // Implement onOptionsItemSelected for the menu
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.my_menu_entry:
+                // Take me to the Currency List
+                Intent intent = new Intent(MainActivity.this, CurrencyListActivity.class);
+
+                // Check before starting the activity to see if Intent can be resolved
+                if(intent.resolveActivity(getPackageManager()) != null) startActivity(intent);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+
+        }
     }
 
     @Override
