@@ -28,6 +28,7 @@ public class CurrencyListAdapter extends BaseAdapter {
     @Override
     public Object getItem(int i) {
         return data.getCurrencies()[i];
+        //return data.getExchangeRates()[i];
     }
 
     @Override

@@ -2,7 +2,6 @@ package de.thu.currencyconverter;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -31,8 +30,10 @@ public class CurrencyListActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                // CANNOT CAST :(
-                //ExchangeRate selectedEntry = (ExchangeRate)adapter.getItem(i);
+
+                // Another option to get the capital
+                //ExchangeRate selectedEntry1 = (ExchangeRate)adapter.getItem(i);
+                //String a = selectedEntry1.getCapital();
 
                 // Get the selected item from the list view
                 String selectedEntry = (String) listView.getItemAtPosition(i);
