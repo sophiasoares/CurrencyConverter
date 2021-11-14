@@ -53,13 +53,11 @@ public class ExchangeRateDatabase {
 
         CURRENCIES_MAP.keySet().toArray(CURRENCIES_LIST);
         Arrays.sort(CURRENCIES_LIST);
-
     }
 
     /**
      * Returns list of currency names
      */
-
     public String[] getCurrencies() {
         return CURRENCIES_LIST;
     }
@@ -67,7 +65,6 @@ public class ExchangeRateDatabase {
     /**
      * Gets exchange rate for currency (equivalent for one Euro)
      */
-
     public double getExchangeRate(String currency) {
         return CURRENCIES_MAP.get(currency).getRateForOneEuro();
     }
@@ -75,7 +72,6 @@ public class ExchangeRateDatabase {
     public static String getCapital(String currency) {
         return CURRENCIES_MAP.get(currency).getCapital();
     }
-
 
     /**
      * Converts a value from a currency to another one
@@ -86,5 +82,10 @@ public class ExchangeRateDatabase {
     }
 
     public ExchangeRate[] getExchangeRates() { return RATES; }
+
+    public void setExchangeRate (String currency, double newRate) {
+        //getExchangeRate(currency) = newRate;
+
+    }
 }
 

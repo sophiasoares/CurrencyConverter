@@ -6,6 +6,7 @@ import androidx.appcompat.widget.ShareActionProvider;
 import androidx.core.view.MenuItemCompat;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -16,6 +17,16 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserFactory;
+
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
@@ -41,6 +52,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         // Set Text Views
         setMyTextViews (spinnerFromValue, spinnerToValue);
 
+        // Per default Android does not allow access to files and network from
+        // the GUI thread. So, deactivate control mechanism
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
     }
 
     ShareActionProvider shareActionProvider;
@@ -65,19 +80,24 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     // Implement onOptionsItemSelected for the menu
+    // Tell the menu what to do when each of the entries is selected
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.my_menu_entry:
+            case R.id.my_menu_entry_currencyList:
                 // Take me to the Currency List
                 Intent intent = new Intent(MainActivity.this, CurrencyListActivity.class);
 
                 // Check before starting the activity to see if Intent can be resolved
                 if(intent.resolveActivity(getPackageManager()) != null) startActivity(intent);
                 return true;
+
+            case R.id.my_menu_entry_refreshRates:
+                // Refresh the rates
+                updateCurrencies();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
-
         }
     }
 
@@ -93,10 +113,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     @Override
-    public void onNothingSelected(AdapterView<?> adapterView) {
+    public void onNothingSelected(AdapterView<?> adapterView) { }
 
-    }
-
+    // Calculate the conversion value from/to the selected currencies
     public void myCalculateButton (View view) {
 
         // Get selected currencies
@@ -125,12 +144,67 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     }
 
+    // Set the text views of the rates with the new selected rates
     void setMyTextViews (Spinner spinnerFromValue, Spinner spinnerToValue) {
         TextView fromValueText = (TextView) findViewById(R.id.fromValue);
         fromValueText.setText("From value in " + spinnerFromValue.getSelectedItem().toString());
 
         TextView toValueText = (TextView) findViewById(R.id.toValue);
         toValueText.setText("To value in " + spinnerToValue.getSelectedItem().toString());
+    }
+
+    // Update the currency rates based on the website
+    void updateCurrencies () {
+
+        // Use my adapter??
+        //List<ExchangeRate> ret = new ArrayList<>();
+
+        ExchangeRateDatabase exchangeRateDatabase = new ExchangeRateDatabase();
+
+        try {
+            // Address as object of type URL
+            URL u = new URL("https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml");
+
+            //Open connection to server:
+            URLConnection connection = u.openConnection();
+
+            // Get InputStream for URLConnection:
+            InputStream inStream = connection.getInputStream();
+
+            // Get character encoding (f.e. "UTF-8") :
+            String encoding = connection.getContentEncoding();
+
+            // Create parser from InputStream inStream. Parser runs through document following
+            // its parts (elements, text blocks) and stops on „events“ (f.e. opening or closing tag)
+            XmlPullParser parser = XmlPullParserFactory.newInstance().newPullParser();
+            parser.setInput(inStream, encoding);
+
+            int eventType = parser.getEventType();
+
+            while (eventType != XmlPullParser.END_DOCUMENT) {
+                if (eventType == XmlPullParser.START_TAG) {
+                    if ("ExchangeRate".equals(parser.getName())) {  // ------------>> ExchangeRate??
+
+                        // Get the values from each attribute
+                        String currency = parser.getAttributeValue(null, "currency");
+                        String rateString = parser.getAttributeValue(null, "rate");
+
+                        // Convert the rate to double
+                        double rate = Double.parseDouble(rateString);
+
+                        // Set the exchange rate with the new data
+                        exchangeRateDatabase.setExchangeRate(currency, rate);
+
+                        //ExchangeRate exchangeRate = new ExchangeRate(); ----->> delete later probably
+                        //ret.add(exchangeRateDataBase);
+                    }
+                }
+                eventType = parser.next();
+            }
+        } catch (Exception e) {
+            Log.e("Update Currencies", "Can't query database!");
+            e.printStackTrace();
+        }
     }
 
 }
