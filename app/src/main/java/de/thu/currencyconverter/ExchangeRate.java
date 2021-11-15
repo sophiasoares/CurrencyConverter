@@ -1,5 +1,7 @@
 package de.thu.currencyconverter;
 
+import android.util.Log;
+
 public class ExchangeRate {
     private String currencyName;
     private double rateForOneEuro;
@@ -21,5 +23,10 @@ public class ExchangeRate {
 
     public double getRateForOneEuro() {
         return rateForOneEuro;
+    }
+
+    public void setRateForOneEuro(double rateForOneEuro) {
+        Log.e("7", "CHEGUEI AQUI NO SET RATE FOR ONE EURO");
+        this.rateForOneEuro = rateForOneEuro;
     }
 }

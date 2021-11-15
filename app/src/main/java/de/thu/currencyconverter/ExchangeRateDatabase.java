@@ -1,5 +1,7 @@
 package de.thu.currencyconverter;
 
+import android.util.Log;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,6 +21,7 @@ public class ExchangeRateDatabase {
             new ExchangeRate("RON", "Bucharest", 4.4050),
             new ExchangeRate("SEK", "Stockholm", 9.3207),
             new ExchangeRate("CHF", "Bern", 1.0439),
+            new ExchangeRate("ISK", "Reykjavik", 150.36), //----> NEWLY ADDED
             new ExchangeRate("NOK", "Oslo", 8.6545),
             new ExchangeRate("HRK", "Zagreb", 7.6448),
             new ExchangeRate("RUB", "Moscow", 62.5595),
@@ -84,8 +87,8 @@ public class ExchangeRateDatabase {
     public ExchangeRate[] getExchangeRates() { return RATES; }
 
     public void setExchangeRate (String currency, double newRate) {
-        //getExchangeRate(currency) = newRate;
-
+        ExchangeRate rate = CURRENCIES_MAP.get(currency);
+        rate.setRateForOneEuro(newRate);
     }
 }
 

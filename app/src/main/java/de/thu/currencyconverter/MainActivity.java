@@ -30,15 +30,15 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
+    ExchangeRateDatabase myExchangeRateDatabase = new ExchangeRateDatabase();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ExchangeRateDatabase myCurrencies = new ExchangeRateDatabase();
-
         // Use my custom adapter to store the currencies and pass the desired layout for the items as a parameter
-        BaseAdapter adapter = new CurrencyListAdapter(myCurrencies, R.layout.spinner_item);
+        BaseAdapter adapter = new CurrencyListAdapter(myExchangeRateDatabase, R.layout.spinner_item);
 
         // Set spinners
         Spinner spinnerFromValue = (Spinner) findViewById(R.id.fromValueSpinner);
@@ -94,6 +94,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             case R.id.my_menu_entry_refreshRates:
                 // Refresh the rates
+                Log.e("1", "TO AQUI NO SWITCH CASE");
                 updateCurrencies();
                 return true;
             default:
@@ -133,10 +134,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             myDecimalValue = Double.parseDouble(decimalValue.getText().toString());
         }
 
-        ExchangeRateDatabase exchangeRateDatabase = new ExchangeRateDatabase();
-
         // Convert the values using the method provided by ExchangeRateDatabase class
-        double convertedValue = exchangeRateDatabase.convert(myDecimalValue, fromCurrency, toCurrency);
+        double convertedValue = myExchangeRateDatabase.convert(myDecimalValue, fromCurrency, toCurrency);
 
         // Show result with 2 decimal places
         TextView result = (TextView) findViewById(R.id.convertedValue);
@@ -155,12 +154,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     // Update the currency rates based on the website
     void updateCurrencies () {
-
-        // Use my adapter??
-        //List<ExchangeRate> ret = new ArrayList<>();
-
-        ExchangeRateDatabase exchangeRateDatabase = new ExchangeRateDatabase();
-
+        Log.e("2", "ENTREI NO UPDATE CURRENCIES");
         try {
             // Address as object of type URL
             URL u = new URL("https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml");
@@ -181,25 +175,31 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             int eventType = parser.getEventType();
 
+            Log.e("3", "FIZ A CONNECTION");
+
             while (eventType != XmlPullParser.END_DOCUMENT) {
                 if (eventType == XmlPullParser.START_TAG) {
-                    if ("ExchangeRate".equals(parser.getName())) {  // ------------>> ExchangeRate??
+                    if ("Cube".equals(parser.getName())) {  // "Cube" because it is the name of the field in the XML
 
                         // Get the values from each attribute
                         String currency = parser.getAttributeValue(null, "currency");
-                        String rateString = parser.getAttributeValue(null, "rate");
 
-                        // Convert the rate to double
-                        double rate = Double.parseDouble(rateString);
+                        // If it is null it is because this "Cube" field does not contain the wanted information
+                        if(currency != null) {
+                            String rateString = parser.getAttributeValue(null, "rate");
 
-                        // Set the exchange rate with the new data
-                        exchangeRateDatabase.setExchangeRate(currency, rate);
+                            // Convert the rate to double
+                            double rate = Double.parseDouble(rateString);
 
-                        //ExchangeRate exchangeRate = new ExchangeRate(); ----->> delete later probably
-                        //ret.add(exchangeRateDataBase);
+                            // Set the exchange rate with the new data
+                            myExchangeRateDatabase.setExchangeRate(currency, rate);
+
+                            Log.e("8", "SAI DO SET EXCHANGE");
+                        }
                     }
                 }
                 eventType = parser.next();
+                Log.e("9", "PASSEI PRO PROXIMO COM PARSER.NEXT");
             }
         } catch (Exception e) {
             Log.e("Update Currencies", "Can't query database!");
