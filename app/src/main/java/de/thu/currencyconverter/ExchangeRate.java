@@ -26,7 +26,6 @@ public class ExchangeRate {
     }
 
     public void setRateForOneEuro(double rateForOneEuro) {
-        Log.e("7", "CHEGUEI AQUI NO SET RATE FOR ONE EURO");
         this.rateForOneEuro = rateForOneEuro;
     }
 }

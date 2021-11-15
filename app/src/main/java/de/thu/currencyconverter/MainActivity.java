@@ -94,7 +94,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             case R.id.my_menu_entry_refreshRates:
                 // Refresh the rates
-                Log.e("1", "TO AQUI NO SWITCH CASE");
                 updateCurrencies();
                 return true;
             default:
@@ -118,7 +117,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     // Calculate the conversion value from/to the selected currencies
     public void myCalculateButton (View view) {
-
         // Get selected currencies
         Spinner spinnerFromValue = (Spinner) findViewById(R.id.fromValueSpinner);
         String fromCurrency = spinnerFromValue.getSelectedItem().toString();
@@ -154,7 +152,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     // Update the currency rates based on the website
     void updateCurrencies () {
-        Log.e("2", "ENTREI NO UPDATE CURRENCIES");
         try {
             // Address as object of type URL
             URL u = new URL("https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml");
@@ -175,8 +172,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             int eventType = parser.getEventType();
 
-            Log.e("3", "FIZ A CONNECTION");
-
             while (eventType != XmlPullParser.END_DOCUMENT) {
                 if (eventType == XmlPullParser.START_TAG) {
                     if ("Cube".equals(parser.getName())) {  // "Cube" because it is the name of the field in the XML
@@ -193,13 +188,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                             // Set the exchange rate with the new data
                             myExchangeRateDatabase.setExchangeRate(currency, rate);
-
-                            Log.e("8", "SAI DO SET EXCHANGE");
                         }
                     }
                 }
+                // Go to the next search
                 eventType = parser.next();
-                Log.e("9", "PASSEI PRO PROXIMO COM PARSER.NEXT");
             }
         } catch (Exception e) {
             Log.e("Update Currencies", "Can't query database!");
