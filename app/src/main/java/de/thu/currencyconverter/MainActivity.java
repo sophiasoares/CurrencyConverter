@@ -31,6 +31,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
     ExchangeRateDatabase myExchangeRateDatabase = new ExchangeRateDatabase();
+    ExchangeRateUpdateRunnable runnable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,10 +53,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         // Set Text Views
         setMyTextViews (spinnerFromValue, spinnerToValue);
 
-        // Per default Android does not allow access to files and network from
-        // the GUI thread. So, deactivate control mechanism
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        StrictMode.setThreadPolicy(policy);
+        // Per default Android does not allow access to files and network from the GUI thread. So, deactivate control mechanism.
+        // It is now commented out because we are using threads to update the currency
+        //StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        //StrictMode.setThreadPolicy(policy);
     }
 
     ShareActionProvider shareActionProvider;
@@ -93,8 +94,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 return true;
 
             case R.id.my_menu_entry_refreshRates:
-                // Refresh the rates
-                updateCurrencies();
+                // Start the thread and refresh the rates
+                TextView tv = (TextView) findViewById(R.id.fromValue);
+                runnable = new ExchangeRateUpdateRunnable(myExchangeRateDatabase, tv);
+                new Thread(runnable).start();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -150,56 +153,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         toValueText.setText("To value in " + spinnerToValue.getSelectedItem().toString());
     }
 
-    // Update the currency rates based on the website
-    void updateCurrencies () {
-        try {
-            // Address as object of type URL
-            URL u = new URL("https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml");
-
-            //Open connection to server:
-            URLConnection connection = u.openConnection();
-
-            // Get InputStream for URLConnection:
-            InputStream inStream = connection.getInputStream();
-
-            // Get character encoding (f.e. "UTF-8") :
-            String encoding = connection.getContentEncoding();
-
-            // Create parser from InputStream inStream. Parser runs through document following
-            // its parts (elements, text blocks) and stops on „events“ (f.e. opening or closing tag)
-            XmlPullParser parser = XmlPullParserFactory.newInstance().newPullParser();
-            parser.setInput(inStream, encoding);
-
-            int eventType = parser.getEventType();
-
-            while (eventType != XmlPullParser.END_DOCUMENT) {
-                if (eventType == XmlPullParser.START_TAG) {
-                    if ("Cube".equals(parser.getName())) {  // "Cube" because it is the name of the field in the XML
-
-                        // Get the values from each attribute
-                        String currency = parser.getAttributeValue(null, "currency");
-
-                        // If it is null it is because this "Cube" field does not contain the wanted information
-                        if(currency != null) {
-                            String rateString = parser.getAttributeValue(null, "rate");
-
-                            // Convert the rate to double
-                            double rate = Double.parseDouble(rateString);
-
-                            // Set the exchange rate with the new data
-                            myExchangeRateDatabase.setExchangeRate(currency, rate);
-                        }
-                    }
-                }
-                // Go to the next search
-                eventType = parser.next();
-            }
-        } catch (Exception e) {
-            Log.e("Update Currencies", "Can't query database!");
-            e.printStackTrace();
-        }
-    }
-
 }
 
 // ---- Old pieces of code in case I need them ---------
@@ -222,3 +175,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
 // I am using my own layout for each item in the spinner (spinner_item.xml)
 //ArrayAdapter adapter = new ArrayAdapter(this, R.layout.spinner_item, currencyName);
+
+// Thread
+//ExchangeRateUpdateRunnable myExchangeRateUpdateRunnable = new ExchangeRateUpdateRunnable(myExchangeRateDatabase);
+//myExchangeRateUpdateRunnable.updateCurrencies();
+//runnable.updateCurrencies();
