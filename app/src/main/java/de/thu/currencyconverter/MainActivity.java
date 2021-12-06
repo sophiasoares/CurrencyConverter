@@ -4,7 +4,10 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.ShareActionProvider;
 import androidx.core.view.MenuItemCompat;
+
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.util.Log;
@@ -30,6 +33,9 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
+    Spinner spinnerFromValue;
+    Spinner spinnerToValue;
+    EditText calculationValue;
     ExchangeRateDatabase myExchangeRateDatabase = new ExchangeRateDatabase();
     ExchangeRateUpdateRunnable runnable;
 
@@ -42,13 +48,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         BaseAdapter adapter = new CurrencyListAdapter(myExchangeRateDatabase, R.layout.spinner_item);
 
         // Set spinners
-        Spinner spinnerFromValue = (Spinner) findViewById(R.id.fromValueSpinner);
+        spinnerFromValue = (Spinner) findViewById(R.id.fromValueSpinner);
         spinnerFromValue.setAdapter(adapter);
         spinnerFromValue.setOnItemSelectedListener(this);
 
-        Spinner spinnerToValue = (Spinner) findViewById(R.id.toValueSpinner);
+        spinnerToValue = (Spinner) findViewById(R.id.toValueSpinner);
         spinnerToValue.setAdapter(adapter);
         spinnerToValue.setOnItemSelectedListener(this);
+
+        // Initialise the calculation edit text (calculate button)
+        calculationValue = (EditText) findViewById(R.id.decimalNumber);
 
         // Set Text Views
         setMyTextViews (spinnerFromValue, spinnerToValue);
@@ -95,8 +104,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             case R.id.my_menu_entry_refreshRates:
                 // Start the thread and refresh the rates
-                TextView tv = (TextView) findViewById(R.id.fromValue);
-                runnable = new ExchangeRateUpdateRunnable(myExchangeRateDatabase, tv);
+                runnable = new ExchangeRateUpdateRunnable(myExchangeRateDatabase, this);
                 new Thread(runnable).start();
                 return true;
             default:
@@ -110,8 +118,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         Toast.makeText(parent.getContext(), text, Toast.LENGTH_SHORT).show();
 
         // Set Text Views
-        Spinner spinnerFromValue = (Spinner) findViewById(R.id.fromValueSpinner);
-        Spinner spinnerToValue = (Spinner) findViewById(R.id.toValueSpinner);
+        // Reassign the spinners in case of a currency refreshment
+        spinnerFromValue = (Spinner) findViewById(R.id.fromValueSpinner);
+        spinnerToValue = (Spinner) findViewById(R.id.toValueSpinner);
         setMyTextViews (spinnerFromValue, spinnerToValue);
     }
 
@@ -121,18 +130,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     // Calculate the conversion value from/to the selected currencies
     public void myCalculateButton (View view) {
         // Get selected currencies
-        Spinner spinnerFromValue = (Spinner) findViewById(R.id.fromValueSpinner);
+        // Reassign the spinners in case of a currency refreshment or a retrieve
+        spinnerFromValue = (Spinner) findViewById(R.id.fromValueSpinner);
         String fromCurrency = spinnerFromValue.getSelectedItem().toString();
-        Spinner spinnerToValue = (Spinner) findViewById(R.id.toValueSpinner);
+        spinnerToValue = (Spinner) findViewById(R.id.toValueSpinner);
         String toCurrency = spinnerToValue.getSelectedItem().toString();
 
         // Convert the amount typed in the EditText to double
-        EditText decimalValue = (EditText) findViewById(R.id.decimalNumber);
         double myDecimalValue;
-        if(decimalValue.getText().toString().equals("")) {
+        if(calculationValue.getText().toString().equals("")) {
             myDecimalValue = 0.0;
         } else {
-            myDecimalValue = Double.parseDouble(decimalValue.getText().toString());
+            myDecimalValue = Double.parseDouble(calculationValue.getText().toString());
         }
 
         // Convert the values using the method provided by ExchangeRateDatabase class
@@ -152,6 +161,75 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         TextView toValueText = (TextView) findViewById(R.id.toValue);
         toValueText.setText("To value in " + spinnerToValue.getSelectedItem().toString());
     }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        // Obtain preferences - Alternative: getSharedPreferences
+        SharedPreferences prefs = getPreferences(Context.MODE_PRIVATE);
+
+        // Get editing access
+        SharedPreferences.Editor editor = prefs.edit();
+
+        String sourceCurrency = spinnerFromValue.getSelectedItem().toString();
+        String targetCurrency = spinnerToValue.getSelectedItem().toString();
+        String enteredValue = calculationValue.getText().toString();
+
+        // Store key-value-pair
+        editor.putString("Source Currency", sourceCurrency);
+        editor.putString("Target Currency", targetCurrency);
+        editor.putString("Entered Value", enteredValue);
+
+
+        // Store currencies
+        // Currencies as keys and rates as values
+        for (String currency : myExchangeRateDatabase.getCurrencies()) {
+            String rate = String.valueOf(myExchangeRateDatabase.getExchangeRate(currency));
+            editor.putString(currency, rate);
+        }
+
+        // Persist data in XML file
+        editor.apply();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        SharedPreferences prefs = getPreferences(Context.MODE_PRIVATE);
+
+        // Retrieve value from preferences
+        String sourceCurrency = prefs.getString("Source Currency", null);
+        if(sourceCurrency != null) {
+            setSpinText(spinnerFromValue, sourceCurrency);
+        }
+
+        String targetCurrency = prefs.getString("Target Currency", null);
+        if(targetCurrency != null) {
+            setSpinText(spinnerToValue, targetCurrency);
+        }
+
+        String enteredValue = prefs.getString("Entered Value", "");
+        calculationValue.setText(enteredValue);
+
+        // Retrieve currencies
+        for (String currency : myExchangeRateDatabase.getCurrencies()) {
+            String rate = prefs.getString(currency, null);
+            if(rate != null) {
+                myExchangeRateDatabase.setExchangeRate(currency, Double.parseDouble(rate));
+            }
+        }
+    }
+
+    // Set the text of the spinner when I retrieve their value from Preferences
+    public void setSpinText(Spinner spin, String text) {
+        for(int i= 0; i < spin.getAdapter().getCount(); i++) {
+            if(spin.getAdapter().getItem(i).toString().contains(text)) {
+                spin.setSelection(i);
+            }
+        }
+    }
+
 
 }
 

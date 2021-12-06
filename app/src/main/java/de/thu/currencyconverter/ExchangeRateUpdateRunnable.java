@@ -1,5 +1,6 @@
 package de.thu.currencyconverter;
 
+import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 import android.widget.TextView;
@@ -14,12 +15,12 @@ public class ExchangeRateUpdateRunnable implements Runnable {
 
     ExchangeRateDatabase myExchangeRateDatabase;
     private UpdateNotifier notifier;
-    private TextView textView;
+    private Activity activity;
 
-    ExchangeRateUpdateRunnable(ExchangeRateDatabase myExchangeRateDatabase, TextView textView) {
+    public ExchangeRateUpdateRunnable(ExchangeRateDatabase myExchangeRateDatabase, Activity activity) {
         this.myExchangeRateDatabase = myExchangeRateDatabase;
-        this.textView = textView;
-        this.notifier = new UpdateNotifier(textView.getContext());
+        this.activity = activity;
+        this.notifier = new UpdateNotifier(activity);
     }
 
     // When the thread starts, run this code
@@ -29,17 +30,16 @@ public class ExchangeRateUpdateRunnable implements Runnable {
         synchronized (ExchangeRateUpdateRunnable.this) {
             updateCurrencies();
             notifier.showOrUpdateNotification(0);
+
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast toast = Toast.makeText(activity, "Currencies update finished!", Toast.LENGTH_SHORT);
+                    toast.show();
+                }
+            });
         }
-
-//        runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
-//                Toast toast = Toast.makeText(this, "Currencies update finished!", Toast.LENGTH_SHORT);
-//                toast.show();
-//            }
-//        });
     }
-
 
 
     // Update the currency rates based on the website
@@ -48,10 +48,10 @@ public class ExchangeRateUpdateRunnable implements Runnable {
             // Address as object of type URL
             URL u = new URL("https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml");
 
-            //Open connection to server:
+            //Open connection to server
             URLConnection connection = u.openConnection();
 
-            // Get InputStream for URLConnection:
+            // Get InputStream for URLConnection
             InputStream inStream = connection.getInputStream();
 
             // Get character encoding (f.e. "UTF-8") :
