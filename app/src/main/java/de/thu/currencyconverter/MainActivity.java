@@ -9,8 +9,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.StrictMode;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,16 +18,6 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserFactory;
-
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
@@ -150,7 +138,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         // Show result with 2 decimal places
         TextView result = (TextView) findViewById(R.id.convertedValue);
         result.setText(String.format("%.2f",convertedValue));
-
     }
 
     // Set the text views of the rates with the new selected rates
@@ -230,31 +217,4 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
-
 }
-
-// ---- Old pieces of code in case I need them ---------
-
-//ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.list_view_item, R.id.text_view, currencyName);
-//ListView listView = (ListView)findViewById(R.id.my_list_view);
-//listView.setAdapter(adapter);
-
-//String[] currencyName = myCurrencies.getCurrencies();
-
-//ArrayAdapter<CharSequence> adapter2 = ArrayAdapter.createFromResource(this, R.array.currencyName, android.R.layout.simple_spinner_item);
-//ArrayAdapter<String> adapter1 = new ArrayAdapter<>(this, R.layout.list_view_item, R.id.text_view, currencyName);
-
-//double fromValueRate = exchangeRateDatabase.getExchangeRate(spinnerFromValue.getSelectedItem().toString());
-//double toValueRate = exchangeRateDatabase.getExchangeRate(spinnerToValue.getSelectedItem().toString());
-
-//adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-//android.R.layout.simple_spinner_dropdown_item
-
-// I am using my own layout for each item in the spinner (spinner_item.xml)
-//ArrayAdapter adapter = new ArrayAdapter(this, R.layout.spinner_item, currencyName);
-
-// Thread
-//ExchangeRateUpdateRunnable myExchangeRateUpdateRunnable = new ExchangeRateUpdateRunnable(myExchangeRateDatabase);
-//myExchangeRateUpdateRunnable.updateCurrencies();
-//runnable.updateCurrencies();

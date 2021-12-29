@@ -1,9 +1,7 @@
 package de.thu.currencyconverter;
 
 import android.app.Activity;
-import android.content.Context;
 import android.util.Log;
-import android.widget.TextView;
 import android.widget.Toast;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -40,7 +38,6 @@ public class ExchangeRateUpdateRunnable implements Runnable {
             });
         }
     }
-
 
     // Update the currency rates based on the website
     synchronized void updateCurrencies() {

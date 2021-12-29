@@ -1,7 +1,5 @@
 package de.thu.currencyconverter;
 
-import android.util.Log;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;

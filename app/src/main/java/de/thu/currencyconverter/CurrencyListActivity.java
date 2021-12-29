@@ -5,14 +5,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
 
 public class CurrencyListActivity extends AppCompatActivity {
 
@@ -47,10 +44,7 @@ public class CurrencyListActivity extends AppCompatActivity {
                 // Check before starting the activity to see if Intent can be resolved
                 if(intent.resolveActivity(getPackageManager()) != null) startActivity(intent);
             }
-
-
         });
-
     }
 
     // Set menu resource for toolbar
@@ -73,14 +67,7 @@ public class CurrencyListActivity extends AppCompatActivity {
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
-
         }
     }
 
 }
-
-// ---- Old pieces of code in case I need them ---------
-
-//String selectedCurrency = data.getCurrencies()[i];
-//TextView currencyName = (TextView) view.findViewById(R.id.list_each_currency_name);
-//String capitalName = selectedEntry.getCapital();

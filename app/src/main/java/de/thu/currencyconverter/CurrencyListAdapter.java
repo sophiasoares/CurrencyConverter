@@ -67,8 +67,5 @@ public class CurrencyListAdapter extends BaseAdapter {
         countryFlag.setImageResource(imageId);
 
         return view;
-        // list_each_currency_name ---> nome de cada moeda
-        // list_each_exchange_rate ---> valor de cada moeda
-
     }
 }
