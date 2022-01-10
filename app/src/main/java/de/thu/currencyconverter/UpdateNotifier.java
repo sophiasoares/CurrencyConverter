@@ -53,7 +53,6 @@ public class UpdateNotifier {
     // Pass notification toNotificationManager
     // Using same NOTIFICATION_ID allows to change / delete
     public void showOrUpdateNotification(int value) {
-        //notificationBuilder.setContentText(value + " seconds");
         notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
     }
 
